@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 // conditions
 export * from './conditions/DefaultWait';
