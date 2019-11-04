@@ -1,8 +1,7 @@
 import * as childProcess from "child_process";
-import AsyncProcess from "./Process";
+import AsyncProcess from "./AsyncProcess";
 
-
-export default class AsyncCommandProcess extends AsyncProcess {
+class AsyncCommandProcess extends AsyncProcess {
 	public constructor(private command: string, private args: string[], private options?: childProcess.SpawnOptions) {
 		super();
 	}
@@ -12,3 +11,6 @@ export default class AsyncCommandProcess extends AsyncProcess {
 	}
 	
 }
+
+export { AsyncCommandProcess };
+export default AsyncCommandProcess;

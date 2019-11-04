@@ -4,21 +4,11 @@ import * as readline from "readline";
 import TimeoutPromise from "../promise/TimeoutPromise";
 
 /**
- * Structure to store process handler and its stdout/stderr.
- * @author Marian Lorinc <mlorinc@redhat.com>
- */
-export interface SpawnReturnType {
-	processHandler: childProcess.ChildProcess;
-	stdout: stream.PassThrough;
-	stderr: stream.PassThrough;
-}
-
-/**
  * Checks if process indetified with pid is running.
  * @param pid pid of process
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
-export function isRunning(pid: number): any {
+function isRunning(pid: number): any {
 	try {
 		return process.kill(pid, 0);
 	}
@@ -31,7 +21,7 @@ export function isRunning(pid: number): any {
  * Provides utility functions to work with asynchronous process.
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
-export default abstract class AsyncProcess {
+abstract class AsyncProcess {
 
 	/**
 	 * Handler of started process
@@ -264,3 +254,7 @@ export default abstract class AsyncProcess {
 		}, ms);
 	}
 }
+
+
+export { AsyncProcess, isRunning };
+export default AsyncProcess;

@@ -27,7 +27,7 @@ interface RegexAction {
  * 
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
-export default class LogAnalyzer {
+class LogAnalyzer {
 
 	/**
 	 * List of actions to be evaluated in process of parsing
@@ -203,3 +203,6 @@ export default class LogAnalyzer {
 		return this;
 	}
 }
+
+export { LogAnalyzer };
+export default LogAnalyzer;

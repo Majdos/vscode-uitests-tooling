@@ -1,7 +1,7 @@
 import { InputBox, QuickOpenBox, QuickPickItem } from "vscode-extension-tester";
 import { expect } from "chai";
 
-export interface InputTestProperties {
+interface InputTestProperties {
 	text?: string;
 	message?: string;
 	placeholder?: string;
@@ -10,7 +10,7 @@ export interface InputTestProperties {
 	hasProgress?: string;
 }
 
-export default class Input {
+class Input {
 
 	private constructor(private _input: InputBox | QuickOpenBox) { }
 
@@ -162,3 +162,6 @@ export default class Input {
 		return new Input(input);
 	}
 }
+
+export { Input };
+export default Input;

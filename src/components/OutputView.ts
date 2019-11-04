@@ -3,7 +3,7 @@ import { OutputView as Output, BottomBarPanel } from "vscode-extension-tester";
 /**
  * Similar object to vscode-extension-tester but with more functionality
  */
-export default class OutputView extends Output {
+class OutputView extends Output {
 
 	private static instance: OutputView | null = null;
 
@@ -14,7 +14,7 @@ export default class OutputView extends Output {
 		super(panel);
 	}
 
-	public async containsText(text: string, timeout?: number): Promise<boolean> {
+	public async waitUntilContainsText(text: string, timeout?: number): Promise<boolean> {
 		let contains = false;
 
 		await this.getDriver()
@@ -42,3 +42,6 @@ export default class OutputView extends Output {
 		throw new Error("OutputView is closed");
 	}
 }
+
+export { OutputView };
+export default OutputView;

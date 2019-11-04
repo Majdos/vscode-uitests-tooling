@@ -1,12 +1,12 @@
 import { ActivityBar, ViewControl, SideBarView, ExtensionsViewItem, ExtensionsViewSection } from "vscode-extension-tester";
 
-export type ExtensionCategories = "Disabled" | "Enabled" | "Installed" | "Outdated" | "Other Recommendations" | "Marketplace";
+type ExtensionCategories = "Disabled" | "Enabled" | "Installed" | "Outdated" | "Other Recommendations" | "Marketplace";
 
 /**
  * ExtensionsViewSection facade class
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
-export default class Marketplace {
+class Marketplace {
 
 	private static instance: Marketplace | null = null;
 
@@ -102,3 +102,6 @@ export default class Marketplace {
 		return Marketplace.instance;
 	}
 }
+
+export { Marketplace };
+export default Marketplace;

@@ -1,6 +1,6 @@
 import { DialogHandler, OpenDialog } from "vscode-extension-tester";
 
-export default class Dialog {
+class Dialog {
 	private constructor() {}
 
 	/**
@@ -40,3 +40,5 @@ export default class Dialog {
 	}
 }
 
+export { Dialog };
+export default Dialog;

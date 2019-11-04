@@ -1,6 +1,6 @@
 type Executor<T> = (resolve: (value?: T | PromiseLike<T> | undefined) => void, reject: (reason?: any) => void) => void;
 
-export default class TimeoutPromise<T> extends Promise<T> {
+class TimeoutPromise<T> extends Promise<T> {
 
 	public constructor(executor: Executor<T>, timeout?: number) {
 		super(TimeoutPromise.create(executor, timeout));
@@ -29,3 +29,6 @@ export default class TimeoutPromise<T> extends Promise<T> {
 		};
 	}
 }
+
+export { TimeoutPromise };
+export default TimeoutPromise;

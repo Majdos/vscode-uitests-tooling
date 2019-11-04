@@ -1,10 +1,10 @@
-import {QuickOpenBox, TitleBar} from "vscode-extension-tester";
+import { QuickOpenBox, TitleBar } from "vscode-extension-tester";
 
 /**
  * Represents command palette element in vscode
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
-export default class CommandPalette extends QuickOpenBox {
+class CommandPalette extends QuickOpenBox {
 
 	private constructor() {
 		super();
@@ -14,7 +14,7 @@ export default class CommandPalette extends QuickOpenBox {
 	 * Executes command in command palette
 	 * @param command command to be executed
 	 */
-	public async executeCommand(command: string) : Promise<void> {
+	public async executeCommand(command: string): Promise<void> {
 		await this.setText(command.startsWith(">") ? command : ">" + command);
 		await this.confirm();
 	}
@@ -33,3 +33,6 @@ export default class CommandPalette extends QuickOpenBox {
 		return new CommandPalette().wait();
 	}
 }
+
+export { CommandPalette };
+export default CommandPalette;

@@ -7,7 +7,7 @@ import DefaultFileDialog from "../native/DefaultFileDialog";
  * Project class represents VS code workspace. 
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
-export default class Project {
+class Project {
 	private _isOpen: boolean;
 
 	/**
@@ -82,3 +82,6 @@ export default class Project {
 		fsExtra.removeSync(this._path);
 	}
 }
+
+export { Project };
+export default Project;

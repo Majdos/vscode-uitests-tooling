@@ -38,9 +38,12 @@ function parseVariables(properties?: { [key: string]: string }): Array<string> {
  * Creates new AsyncProcess which can be started later.
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
-export default class Maven extends AsyncCommandProcess {
+class Maven extends AsyncCommandProcess {
 	public constructor(options: MavenOptions) {
 		options.args = options.args || [];
 		super("mvn", [...parseVariables(options.properties), ...options.args], options);
 	}
 }
+
+export { Maven };
+export default Maven;
