@@ -92,7 +92,7 @@ class LogAnalyzer {
 
 			this._successfulMatches++;
 
-			if (this.successfulMatches === this._regexActions.length) {
+			if (this._successfulMatches === this._regexActions.length) {
 				this.stop();
 			}
 
@@ -102,7 +102,7 @@ class LogAnalyzer {
 	}
 
 	private analyzerWithOrder(line: string): void {
-		const currentRegexAction = this._regexActions[this.successfulMatches];
+		const currentRegexAction = this._regexActions[this._successfulMatches]; // Do not use this.successfulMatches
 		this.handleRegexExec(currentRegexAction, line);
 	}
 

@@ -12,7 +12,7 @@ class DefaultFileDialog {
 	 * 
 	 * @param path 
 	 */
-	async openFile(path: string): Promise<void> {
+	public  async openFile(path: string): Promise<void> {
 		await new TitleBar().select('File', 'Open File...');
 		await this.open(path);
 	}
@@ -22,7 +22,7 @@ class DefaultFileDialog {
 	 * 
 	 * @param path 
 	 */
-	async openFolder(path: string): Promise<void> {
+	public async openFolder(path: string): Promise<void> {
 		await new TitleBar().select('File', 'Open Folder...');
 		await this.open(path);
 	}

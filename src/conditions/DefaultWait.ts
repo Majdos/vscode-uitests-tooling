@@ -13,7 +13,7 @@ enum TimePeriod {
 }
 class DefaultWait {
 
-	static readonly TimePeriod = TimePeriod;
+	public static readonly TimePeriod = TimePeriod;
 
 	/**
  	* Suspends thread if used with await keyword. When promise is used instead, it has similar

@@ -19,7 +19,7 @@ class WaitUntil {
 	 * @param contentAssistant ContentAssist obj
 	 * @param timePeriod Timeout in ms
 	 */
-	async assistHasItems(contentAssistant: ContentAssist, timePeriod: number) {
+	public async assistHasItems(contentAssistant: ContentAssist, timePeriod: number) {
 		await this.driver.wait(
 			async function () {
 				const items = await contentAssistant.getItems();

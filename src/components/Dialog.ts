@@ -1,6 +1,11 @@
 import { DialogHandler, OpenDialog } from "vscode-extension-tester";
 
+/**
+ * Handles open dialogs in vscode
+ * @author Marian Lorinc <mlorinc@redhat.com>
+ */
 class Dialog {
+
 	private constructor() {}
 
 	/**
