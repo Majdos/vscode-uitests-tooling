@@ -67,8 +67,11 @@ class LogAnalyzer {
 	 * Get number of successful matches
 	 */
 	public get successfulMatches(): number {
-		if (!this._done) {
-			throw new Error("Parser is still parsing or did not start");
+		if (!this._done && this._waitPromise === null) {
+			throw new Error("Parser did not start");
+		}
+		if (!this._done && this._waitPromise !== null) {
+			throw new Error("Parser is parsing at this moment");
 		}
 
 		return this._successfulMatches;
@@ -123,18 +126,13 @@ class LogAnalyzer {
 		}
 	}
 
-	private startParsing(respectOrderOfRegexes: boolean): void {
+	private startParsing(parserFunction: (line: string) => void): void {
 		if (this._done) {
 			throw new Error("Analyzer cannot be started again. Create new object instead");
 		}
 
-		if (respectOrderOfRegexes) {
-			this._logReader.on("line", this.analyzerWithOrder);
-		}
-		else {
-			this._logReader.on("line", this.analyzerWithoutOrder);
-		}
-
+		this._logReader.on("line", parserFunction);
+		
 		// Wait condition, wait for end of stream
 		this._waitPromise = new Promise(resolve => this._logReader.on("close", () => {
 			this._done = true;
@@ -149,7 +147,7 @@ class LogAnalyzer {
 	 * 2. Repeat step 1 until we are out of rules to match
 	 */
 	public startOrderedParsing(): void {
-		this.startParsing(true);
+		this.startParsing(this.analyzerWithOrder);
 	}
 
 	/**
@@ -159,7 +157,7 @@ class LogAnalyzer {
 	 * If rule matched, we execute rule action and move on next line.
 	 */
 	public startUnorderedParsing(): void {
-		this.startParsing(false);
+		this.startParsing(this.analyzerWithoutOrder);
 	}
 
 	/**
