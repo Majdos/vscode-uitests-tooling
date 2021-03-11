@@ -1,4 +1,4 @@
-export type Resolver<T> = (value?: T | PromiseLike<T> | undefined) => void;
+export type Resolver<T> = (value: T | PromiseLike<T>) => void;
 export type Rejecter = (reason?: any) => void;
 type Executor<T> = (resolve: Resolver<T>, reject: Rejecter) => void;
 
@@ -14,7 +14,7 @@ class TimeoutPromise<T> extends Promise<T> {
 	}
 
 	private static decorateResolver<T>(resolver: Resolver<T> | Rejecter, timer: NodeJS.Timeout | null): Resolver<T> {
-		return (value?: T | PromiseLike<T> | undefined) => {
+		return (value: T | PromiseLike<T>) => {
 			if (timer) {
 				clearTimeout(timer);
 			}
@@ -23,7 +23,7 @@ class TimeoutPromise<T> extends Promise<T> {
 	}
 
 	private static create<T>(executor: Executor<T>, timeout?: number, options?: TimeoutPromiseOptions): Executor<T> {
-		return async (resolve: (value?: T | PromiseLike<T> | undefined) => void,
+		return async (resolve: (value: T | PromiseLike<T>) => void,
 			reject: (reason?: any) => void) => {
 	
 			let timer: NodeJS.Timeout | null = null;

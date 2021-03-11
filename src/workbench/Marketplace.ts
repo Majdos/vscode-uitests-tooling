@@ -5,7 +5,6 @@ import {
 	SideBarView,
 	ViewControl
 } from 'vscode-extension-tester';
-import { repeat } from '../conditions/Repeat';
 
 type ExtensionCategory = "Disabled" | "Enabled" | "Installed" | "Outdated" | "Other Recommendations" | "Marketplace" | "Popular";
 const EXTENSION_CATEGORIES = ["Disabled", "Enabled", "Installed", "Outdated", "Other Recommendations", "Marketplace", "Popular"];
@@ -15,7 +14,8 @@ const EXTENSION_CATEGORIES = ["Disabled", "Enabled", "Installed", "Outdated", "O
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
 class Marketplace {
-	private constructor(private _extensionView: ViewControl, private _marketplaceSideBar: SideBarView) { }
+	private constructor(private _extensionView: ViewControl, private _marketplaceSideBar: SideBarView) { 
+	}
 
 	/**
 	 * Gets marketplace section
@@ -65,33 +65,30 @@ class Marketplace {
 	/**
 	 * Finds extension in marketplace. Leaves search bar with title value.
 	 * @param title display name of extension
+	 * @param timeout timeout
+	 * @param sectionTitle Marketplace section where extension is listed.
 	 * @returns promise which resolves to ExtensionsViewItem(extension)
 	 */
-	public async findExtension(title: string, timeout: number = 5000): Promise<ExtensionsViewItem> {
-		let section = await this.getAnyExtensionSection();
-		let extension = await section.findItem(title).catch(() => undefined);
+	public async findExtension(title: string, timeout: number = 5000, sectionTitle?: ExtensionCategory): Promise<ExtensionsViewItem> {
+		const section = sectionTitle ? await this.getExtensionsSection(sectionTitle) : await this.getAnyExtensionSection();
+		let extension = await section.findItem(title);
 
-		if (extension === undefined) {
-			// If extension was not found search in marketplace extensions list.
-			// Repeat because list might not be ready. VSCode downloads extension list from registry.
-			return repeat(async () => {
-				try {
-					const items = await section.getVisibleItems();
-	
-					for (const item of items) {
-						if (await item.getTitle() === title) {
-							return item;
-						}
+		if(extension === undefined) {
+			extension = await section.getDriver().wait(async () => {
+				const marketplaceSection = await this.getAnyExtensionSection();
+				const extensions = await marketplaceSection.getVisibleItems();
+
+				for (const extension of extensions) {
+					if (await extension.getTitle() === title) {
+						return extension;
 					}
 				}
-				catch {
-					section = await this.getAnyExtensionSection();
-				}
-				return undefined;
-			}, { timeout }) as Promise<ExtensionsViewItem>;
-		}
 
-		return extension;
+				return undefined;
+			}, timeout, "Timed out: Could not find extension");
+		}
+		
+		return extension as ExtensionsViewItem;
 	}
 
 	/**
@@ -114,7 +111,10 @@ class Marketplace {
 	 * @returns marketplace handler
 	 */
 	public static async open(): Promise<Marketplace> {
-		const extensionView = new ActivityBar().getViewControl("Extensions");
+		const extensionView = await new ActivityBar().getViewControl("Extensions");
+		if (extensionView === undefined) {
+			throw new Error("Extension view control is undefined.");
+		}
 		const marketplaceView = await extensionView.openView();
 		return new Marketplace(extensionView, marketplaceView);
 	}
@@ -123,8 +123,12 @@ class Marketplace {
 	 * Gets open instance of marketplace
 	 * @returns marketplace handler
 	 */
-	public static getInstance() {
-		return new Marketplace(new ActivityBar().getViewControl("Extensions"), new SideBarView());
+	public static async getInstance() {
+		const extensionView = await new ActivityBar().getViewControl("Extensions");
+		if (extensionView === undefined) {
+			throw new Error("Extension view control is undefined.");
+		}
+		return new Marketplace(extensionView, new SideBarView());
 	}
 }
 

@@ -35,10 +35,10 @@
 		"url": "https://github.com/djelinek/vscode-uitests-tooling.git"
 	},
 	"scripts": {
-		"prepack": "npm run clean && npm ci && npm run lint && npm run build",
+		"prepack": "npm install && rimraf out && npm run build",
 		"compile": "tsc -p ./",
 		"build": "npm run compile",
-		"clean": "rm -rf out node_modules *.tgz && npm run clean --prefix test-project",
+		"clean": "rimraf out node_modules *.tgz && npm run clean --prefix test-project",
 		"lint": "eslint 'src/**/*.ts'",
 		"dev": "npm pack",
 		"pretest": "npm pack && npm run prepare-tooling --prefix test-project && npm ci --prefix test-project",
@@ -47,7 +47,7 @@
 	"dependencies": {
 		"chai": "^4.2.0",
 		"fs-extra": "^8.1.0",
-		"mocha": "^8.2.0"
+		"ts-essentials": "^3.0.2"
 	},
 	"devDependencies": {
 		"@types/chai": "^4.2.3",
@@ -56,14 +56,15 @@
 		"@types/node": "^14.0.9",
 		"@typescript-eslint/eslint-plugin": "^2.9.0",
 		"@typescript-eslint/parser": "^2.9.0",
-		"eslint": "^6.7.1",
-		"ts-essentials": "^3.0.2",
-		"typescript": "^3.9.5",
-		"vscode-extension-tester": "^3.2.5",
+		"eslint": "^7.20.0",
+		"rimraf": "^3.0.2",
+		"typescript": "^3.9.9",
+		"vscode-extension-tester": "^4.0.1",
 		"vscode-extension-tester-native": "^3.0.2"
 	},
 	"peerDependencies": {
-		"vscode-extension-tester": "^3.2.5",
+		"mocha": "^8.2.0",
+		"vscode-extension-tester": "^4.0.1",
 		"vscode-extension-tester-native": "^3.0.2"
 	}
 }

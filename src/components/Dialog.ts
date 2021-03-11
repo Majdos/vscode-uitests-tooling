@@ -1,10 +1,7 @@
-import * as fs from "fs";
-import * as path from "path";
-import { ActivityBar, SideBarView, TitleBar } from 'vscode-extension-tester';
+import * as path from 'path';
+import { ActivityBar, By, SideBarView, TitleBar, until, VSBrowser } from 'vscode-extension-tester';
 import { DialogHandler, OpenDialog } from 'vscode-extension-tester-native';
 import { repeat } from "../conditions/Repeat";
-
-export const FILE_HELPER_NAME = ".AAAVSCODE_UITEST_TOOLING_OPEN_FOLDER";
 
 /**
  * Handles File Dialogs 
@@ -44,13 +41,16 @@ class Dialog {
 	 * @param path path to the specific folder
 	 * @returns resolved dialog
 	 */
-	public static async openFolder(filePath: string, timeout: number = 30000): Promise<OpenDialog> {
-		if (filePath && fs.existsSync(filePath)) {
-			fs.closeSync(fs.openSync(path.join(filePath, FILE_HELPER_NAME), "w"));
-		}
+	public static async openFolder(filePath: string, timeout?: number): Promise<OpenDialog> {
 		const menu = new TitleBar();
 		await menu.select('File', 'Open Folder...');
-		return handleOpenFolder(filePath, timeout);
+		const dialog = await handleOpenFolder(filePath);
+		await openFileExplorer();
+		await openFolderWaitCondition(
+			path.basename(filePath),
+			timeout
+		);
+		return dialog;
 	}
 
 	/**
@@ -100,30 +100,35 @@ async function openDialog(path: string = ""): Promise<OpenDialog> {
 	return dialog;
 }
 
-async function handleOpenFolder(filePath: string, timeout: number): Promise<OpenDialog> {
+async function handleOpenFolder(filePath: string): Promise<OpenDialog> {
 	const dialog = await openDialog(filePath);
 	await dialog.confirm();
-
-	if (filePath && fs.existsSync(filePath)) {
-		await openFileExplorer();
-		await findFile(FILE_HELPER_NAME, path.basename(filePath), timeout);
-		fs.unlinkSync(path.join(filePath, FILE_HELPER_NAME));
-	}
-
 	return dialog;
 }
 
 async function openFileExplorer(): Promise<void> {
 	const activityBar = new ActivityBar();
-	await activityBar.getViewControl("Explorer").openView();
+	const viewControl = await activityBar.getViewControl("Explorer");
+
+	if (viewControl) {
+		await viewControl.openView();
+	}
+	else {
+		throw new Error("Explorer is undefined");
+	}
 }
 
-async function findFile(fileName: string, folderName: string, timeout: number = 30000): Promise<void> {
-	const start = Date.now();
-	const section = await repeat(() => new SideBarView().getContent().getSection(folderName), { timeout, log: true, id: `Find section ${folderName}` });
-	timeout = timeout - (Date.now() - start);
-
-	await repeat(() => section.findItem(fileName, 1), { timeout, log: true, id: `findFile(${fileName})` });
+async function openFolderWaitCondition(folderName: string, timeout?: number): Promise<void> {
+	await VSBrowser.instance.driver.wait(async () => {
+		try {
+			const section = await new SideBarView().getContent().getSection(folderName);
+			const html = await section.getDriver().wait(until.elementLocated(By.css("html")), 150);
+			return await section.isDisplayed() && await section.isEnabled() && html;
+		}
+		catch {
+			return false;
+		}
+	}, timeout, `Timed out: openFolderWaitCondition('${folderName}', ${timeout})`);
 }
 
-export { Dialog, handleOpenFolder };
+export { Dialog, openFolderWaitCondition };

@@ -1,11 +1,12 @@
 import { expect } from 'chai';
 import {
-	Input as TesterInput,
+	Input as IInput,
 	InputBox,
-	QuickOpenBox,
-	QuickPickItem
+	Key,
+	WebElementPromise
 } from 'vscode-extension-tester';
-import { WebElementConditions, repeat } from '..';
+import { WebElementConditions } from '..';
+import { repeat } from '../conditions/Repeat';
 
 interface InputTestProperties {
 	text?: string;
@@ -16,24 +17,93 @@ interface InputTestProperties {
 	hasProgress?: string;
 }
 
-class Input {
-	private _input: TesterInput;
+/**
+ * Input element class which extends functionality of InputBox.
+ * Use this implementation when InputBox implementation is unstable in your testing environment. 
+ */
+class Input extends InputBox {
 
-	protected constructor(input: TesterInput | Input) { 
-		if (input instanceof Input) {
-			this._input = input._input;
+	constructor() {
+		super();
+	}
+
+	/**
+	 * Get <input> html element
+	 * @returns WebElementPromise resolving to <input> element
+	 */
+	public input(): WebElementPromise {
+		try {
+			return this.findElement(Input.locators.Input.input);
 		}
-		else {
-			this._input = input;
+		catch (e) {
+			if (e.name === "NoSuchElementError") {
+				throw new Error(`Could not locate Input element. This might happen when VS Code input element has not been used since last test run.\n${e}`);
+			}
+			else {
+				throw e;
+			}
 		}
 	}
 
 	/**
-  	* Get current text of the input field
-  	* @returns Promise resolving to text of the input field
-  	*/
-	public async getText(): Promise<string> {
-		return this._input.getText();
+	 * input.getAttribute('value') does not always return actual value.
+	 * @returns actual value of input
+	 */
+	private async getInputValue(): Promise<string> {
+		const input = await this.input();
+		let value = await input.getDriver().executeScript("arguments[0].value", input);
+
+		if (value === null || value === undefined) {
+			value = ""; 
+		}
+
+		return value as string;
+	}
+
+	/**
+	 * Clear input field. 
+	 * 
+	 * Algorithm:
+	 * 1. Text is deleted by pressing 'backspace' and 'delete' keys.
+	 * 2. If input text is empty('') method waits 'clearThreshold' milliseconds.
+	 * 3. If input value is changed during wait, go to step 1
+	 * 3. If input value is empty, method finishes successfully 
+	 * 
+	 * @param timeout timeout in milliseconds after method fails
+	 * @param clearThreshold time duration when method successfully resolves.
+	 */
+	public async clear(timeout: number = 5000, clearThreshold: number = 2000): Promise<void> {
+		let start = 0;
+
+		try {
+			await repeat(async () => {
+				const input = await this.input();
+				await WebElementConditions.waitUntilInteractive(input, timeout);
+				const value = await this.getInputValue();
+				const text = await this.getText();
+				
+				if (text === "" && value === "" && start === 0) {
+					start = Date.now();
+				}
+				else if (text === "" && value === "" && Date.now() - start >= clearThreshold) {
+					return true;
+				}
+				else if (text !== "" || value !== "") {
+					start = 0;
+				}
+
+				await input.sendKeys(Key.BACK_SPACE, Key.DELETE);
+				return false;
+			}, {
+				id: "Input.clear",
+				timeout
+			});
+		}
+		catch (e) {
+			console.error(e);
+			console.error(`Could not clear input field: "${await this.input().getText()}". Value: "${this.getInputValue()}".`);
+			throw e;
+		}
 	}
 
 	/**
@@ -41,102 +111,27 @@ class Input {
 	 * @param text text to set into the input field
 	 * @returns Promise resolving when the text is typed in
 	 */
-	public async setText(text: string): Promise<void> {
-		return this._input.setText(text);
-	}
-
-	/**
-	 * Get the placeholder text for the input field
-	 * @returns Promise resolving to input placeholder
-	 */
-	public async getPlaceHolder(): Promise<string> {
-		return this._input.getPlaceHolder();
+	public async setText(text: string, timeout: number = 5000): Promise<void> {
+		const input = await this.input();
+		await WebElementConditions.waitUntilInteractive(input, timeout);
+		await input.click();
+		await this.clear(timeout);
+		await WebElementConditions.waitUntilInteractive(input, timeout);
+		await input.sendKeys(text);
+		await input.getDriver().wait(
+			async () => await this.getText() === text,
+			timeout,
+			`Timed out setting text to "${text}". Input text: "${await this.getText()}"`
+		);
 	}
 
 	/**
 	 * Confirm the input field by pressing Enter
 	 * @returns Promise resolving when the input is confirmed
 	 */
-	public async confirm(): Promise<void> {
-		return this._input.confirm();
-	}
-
-	/**
-	 * Cancel the input field by pressing Escape
-	 * @returns Promise resolving when the input is cancelled
-	 */
-	public async cancel(): Promise<void> {
-		return this._input.cancel();
-	}
-
-	/**
-	 * Select (click) a quick pick option.
-	 * Search for the item can be done by its text, or index in the quick pick menu.
-	 * Note that scrolling does not affect the item's index, but it will
-	 * replace some items in the DOM (thus they become unreachable)
-	 * 
-	 * @param indexOrText index (number) or text (string) of the item to search by
-	 * @returns Promise resolving when the given quick pick is selected
-	 */
-	public async selectQuickPick(indexOrText: string | number): Promise<void> {
-		return this._input.selectQuickPick(indexOrText);
-	}
-
-	/**
-	 * Find whether the input box has an active progress bar
-	 * @returns Promise resolving to true/false
-	 */
-	public hasProgress(): Promise<boolean> {
-		return this._input.hasProgress();
-	}
-
-	/**
-	 * Retrieve the quick pick items currently available in the DOM
-	 * (visible in the quick pick menu)
-	 * @returns Promise resolving to array of QuickPickItem objects
-	 */
-	public getQuickPicks(): Promise<QuickPickItem[]> {
-		return this._input.getQuickPicks();
-	}
-
-	// InputBox only methods
-
-	/**
-     * Get the message below the input field
-     */
-	public async getMessage(): Promise<string> {
-		if (this._input instanceof InputBox) {
-			return (this._input as InputBox).getMessage();
-		}
-		else {
-			throw new Error("Input field is not type of InputBox. It is probable QuickOpenBox");
-		}
-	}
-
-	/**
-	 * Find whether the input is showing an error
-	 * @returns Promise resolving to notification message
-	 */
-	public async hasError(): Promise<boolean> {
-		if (this._input instanceof InputBox) {
-			return (this._input as InputBox).hasError();
-		}
-		else {
-			throw new Error("Input field is not type of InputBox. It is probable QuickOpenBox");
-		}
-	}
-
-	/**
-	 * Check if the input field is masked (input type password)
-	 * @returns Promise resolving to notification message
-	 */
-	public async isPassword(): Promise<boolean> {
-		if (this._input instanceof InputBox) {
-			return (this._input as InputBox).isPassword();
-		}
-		else {
-			throw new Error("Input field is not type of InputBox. It is probable QuickOpenBox");
-		}
+	public async confirm(timeout: number = 3000): Promise<void> {
+		await WebElementConditions.waitUntilInteractive(await this.input(), timeout);
+		await super.confirm();
 	}
 
 	/**
@@ -172,24 +167,15 @@ class Input {
 	 * @param timeout 
 	 */
 	public async typeAndConfirm(text: string, timeout: number = 5000): Promise<void> {
-		await WebElementConditions.waitUntilInteractive(this._input, timeout);
-		await this._input.setText(text);
-		await repeat(async () => {
-			await this._input.confirm().catch(() => {});
-			return await WebElementConditions.isHidden(this._input);
-		}, {
-			timeout
-		});
+		await this.setText(text, timeout);
+		await this.confirm(timeout);
 	}
 
-	public static async getInstance(timeout?: number): Promise<Input> {
-		let input: InputBox | QuickOpenBox;
-		try {
-			input = await InputBox.create();
-		} catch (e) {
-			input = await new QuickOpenBox().wait(timeout);
-		}
-		return new Input(input);
+	/**
+	 * @deprecated Use Input class constructor instead.
+	 */
+	public static async getInstance(): Promise<Input> {
+		return new Input();
 	}
 
 	/**
@@ -199,7 +185,7 @@ class Input {
 	 * @param timeout time after waiting is stopped unsuccessfully
 	 * @throws Error type when any quickpick did not show in suggested quickpicks
 	 */
-	public static async waitQuickPicks(input: TesterInput, quickPickTexts: string[], timeout: number = 5000): Promise<void> {
+	public static async waitQuickPicks(input: IInput, quickPickTexts: string[], timeout: number = 5000): Promise<void> {
 		const result = await input.getDriver().wait(async () => {
 			const quickPickItems = await input.getQuickPicks().catch(() => []);
 

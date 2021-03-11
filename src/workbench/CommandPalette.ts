@@ -1,4 +1,4 @@
-import { Input, InputBox, TitleBar } from "vscode-extension-tester";
+import { TitleBar } from "vscode-extension-tester";
 import { Input as InputHelper } from "../components/Input";
 
 /**
@@ -6,10 +6,6 @@ import { Input as InputHelper } from "../components/Input";
  * @author Marian Lorinc <mlorinc@redhat.com>
  */
 class CommandPalette extends InputHelper {
-
-	private constructor(input: Input | InputHelper) {
-		super(input);
-	}
 
 	/**
 	 * Executes command in command palette
@@ -30,7 +26,7 @@ class CommandPalette extends InputHelper {
 	}
 
 	public static async getInstance(): Promise<CommandPalette> {
-		return new CommandPalette(await InputBox.create());
+		return new CommandPalette();
 	}
 }
 

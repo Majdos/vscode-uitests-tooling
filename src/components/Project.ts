@@ -2,7 +2,6 @@ import * as fs from "fs";
 import * as fsExtra from "fs-extra";
 import * as path from "path";
 import { TitleBar } from "vscode-extension-tester";
-import { Dialog } from "./Dialog";
 import { Menu, OpenMethod } from "./Menu";
 
 /**
@@ -28,14 +27,14 @@ class Project {
 	public async isOpen(): Promise<boolean> {
 		const title = await new TitleBar().getTitle();
 		const parts = title.split("-").map((p) => p.trim());
-		return parts.length === 3 && parts[1] === path.basename(this._path);
+		return parts.length === 3 && parts[1] === path.basename(this.path);
 	}
 
 	/**
 	 * Creates new project in filesystem.
 	 */
 	public async create(): Promise<void> {
-		fs.mkdirSync(this._path);
+		fs.mkdirSync(this.path);
 	}
 
 	/**
@@ -44,18 +43,18 @@ class Project {
 	 */
 	public async createFrom(path: string): Promise<void> {
 		await this.create();
-		fsExtra.copySync(path, this._path);
+		fsExtra.copySync(path, this.path);
 	}
 
 	/**
 	 * Opens project in VS code.
 	 */
 	public async open(timeout?: number, openMethod: OpenMethod = OpenMethod.DIALOG): Promise<void> {
-		if (!fs.statSync(this._path).isDirectory()) {
-			throw new Error(`Cannot open "${this._path}. It is not folder."`);
+		if (!fs.statSync(this.path).isDirectory()) {
+			throw new Error(`Cannot open "${this.path}. It is not folder."`);
 		}
 
-		await Menu.open(this._path, {
+		await Menu.openFolder(this.path, {
 			timeout, openMethod
 		});
 	}
@@ -63,15 +62,15 @@ class Project {
 	/**
 	 * Closes project in VS code.
 	 */
-	public async close(timeout?: number): Promise<void> {
-		await Dialog.closeFolder(timeout);
+	public async close(timeout: number): Promise<void> {
+		await Menu.closeFolder(this.path, timeout);
 	}
 
 	/**
 	 * Deletes project in VS code.
 	 */
 	public async delete(): Promise<void> {
-		fsExtra.removeSync(this._path);
+		fsExtra.removeSync(this.path);
 	}
 }
 

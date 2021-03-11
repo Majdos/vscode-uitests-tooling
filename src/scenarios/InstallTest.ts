@@ -13,13 +13,13 @@ export interface InstallTimeouts {
 
 export interface InstallParameters {
 	/**
-	 * Test suite title
-	 */
-	testTitle?: string;
-	/**
 	 * Name of extension in vscode marketplace
 	 */
 	displayName?: string;
+	/**
+	 * Test suite title
+	 */
+	testTitle?: string;
 	/**
 	 * Timeout configuration
 	 */
@@ -64,7 +64,7 @@ export function installTest(parameters?: InstallParameters) {
 
 		it('Find extension', async function () {
 			this.timeout(parameters?.timeouts?.findExtension || 10000);
-			extension = await marketplace.findExtension(parameters?.displayName as string);
+			extension = await marketplace.findExtension(parameters?.displayName as string, this.timeout());
 			expect(extension, `Could not find extension '${parameters?.displayName}'`).not.to.be.undefined;
 		});
 

@@ -23,7 +23,8 @@ export class WebElementConditions {
 
 	static async waitUntilInteractive(element: WebElement, timeout: number): Promise<boolean> {
 		return repeat(() => WebElementConditions.isInteractive(element), {
-			timeout
+			timeout,
+			id: "WebElementConditions.waitUntilInteractive"
 		});
 	}
 

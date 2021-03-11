@@ -25,13 +25,13 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"clean": "rm -rf node_modules out *.vsix",
+		"clean": "rimraf node_modules out *.vsix",
 		"compile": "tsc -p ./",
 		"lint": "eslint src --ext ts",
 		"watch": "tsc -watch -p ./",
 		"prepare-tooling": "npm uninstall vscode-uitests-tooling && npm i -D ../vscode-uitests-tooling-2.1.0.tgz",
 		"prepare-test-extension": "npm run lint && npm run compile",
-		"pretest": "rm -rf test-extensions && npm run prepare-test-extension",
+		"pretest": "rimraf test-extensions && npm run prepare-test-extension",
 		"test": "node ./out/tests/preinstall-runner.js && node ./out/tests/postinstall-runner.js"
 	},
 	"devDependencies": {
@@ -44,6 +44,7 @@
 		"eslint": "^6.8.0",
 		"glob": "^7.1.6",
 		"mocha": "^8.2.0",
+		"rimraf": "^3.0.2",
 		"typescript": "^3.8.3",
 		"vsce": "^1.75.0",
 		"vscode-extension-tester": "^3.0.2",

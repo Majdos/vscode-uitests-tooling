@@ -46,10 +46,12 @@ export class SimpleTestRunner implements TestRunner {
 	async run(testsGlob: string): Promise<number> {
 		return this.exTester.runTests(
 			testsGlob,
-			this.parameters.codeVersion,
-			this.parameters.codeSettings,
-			false,
-			this.parameters.mochaConfig
+			{
+				vscodeVersion: this.parameters.codeVersion,
+				settings: this.parameters.codeSettings,
+				cleanup: false,
+				config: this.parameters.mochaConfig
+			}
 		).then(() => 0).catch(() => 1);
 	}
 }
